@@ -30,40 +30,55 @@ async function run() {
      
 
    const allMealCollection = client.db('eduFeastDB').collection('allMeals')
+   const userCollection = client.db('eduFeastDB').collection('users');
 
 
+
+         // ---------- Meals related API ---------- //
 
    // get all meals data from database
    app.get('/allMeals', async(req,res)=>{
         
     const search = req.query.search;
     const category = req.query.category;
-    const price = req.query.price 
-    // console.log({search, price, category});
-    
-    let query = {};
+    const price = req.query.price; 
 
+    let query = {};
     if (search) {
       query.title = { $regex: search, $options: 'i' };
     }
-
     if (category) {
       query.category = category;
     }
-  
     if (price) {
       const [minPrice, maxPrice] = price.split('-').map(Number);
       query.price = { $gte: minPrice, $lte: maxPrice };
-      console.log(minPrice, maxPrice);
     }
-  
        const result = await allMealCollection.find(query).toArray();
-
        if (result.length === 0) {
-        return res.status(204).send({message:'No Data Founds!'}); // No Content
+        return res.status(204).send(); 
       }
        res.send(result);
    })
+
+
+
+    // ---------- Users related API ---------- //
+
+    app.post('/users', async(req, res)=>{
+        const user = req.body;
+        console.log(user);
+
+        // check whether user exists or not. Insert user only if user does not exist
+        const query = {email: user.email};
+        const existUser = await userCollection.findOne(query);
+        console.log(existUser);
+        if(existUser){
+           return res.send({message: 'User already exists!', insertedId: null})
+        }
+        const result = await userCollection.insertOne(user);
+        res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
