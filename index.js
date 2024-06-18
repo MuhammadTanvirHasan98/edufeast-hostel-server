@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config()
 
 const app = express()
-const port = 5000 || process.env.PORT;
+const port = process.env.PORT || 5000;
 
 //middlewares
 app.use(cors())
@@ -35,7 +35,33 @@ async function run() {
 
    // get all meals data from database
    app.get('/allMeals', async(req,res)=>{
-       const result = await allMealCollection.find().toArray();
+        
+    const search = req.query.search;
+    const category = req.query.category;
+    const price = req.query.price 
+    // console.log({search, price, category});
+    
+    let query = {};
+
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+
+    if (category) {
+      query.category = category;
+    }
+  
+    if (price) {
+      const [minPrice, maxPrice] = price.split('-').map(Number);
+      query.price = { $gte: minPrice, $lte: maxPrice };
+      console.log(minPrice, maxPrice);
+    }
+  
+       const result = await allMealCollection.find(query).toArray();
+
+       if (result.length === 0) {
+        return res.status(204).send({message:'No Data Founds!'}); // No Content
+      }
        res.send(result);
    })
 
