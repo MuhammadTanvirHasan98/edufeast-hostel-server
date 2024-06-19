@@ -65,6 +65,15 @@ async function run() {
 
     // ---------- Users related API ---------- //
 
+
+    app.get('/users/:email', async(req,res)=>{
+        const email = req.params.email;
+        console.log(email);
+        const query = {email: email}
+        const result = await userCollection.findOne(query);
+        res.send(result);
+    })
+
     app.post('/users', async(req, res)=>{
         const user = req.body;
         console.log(user);
