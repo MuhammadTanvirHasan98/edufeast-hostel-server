@@ -28,6 +28,7 @@ async function run() {
 
     const allMealCollection = client.db("eduFeastDB").collection("allMeals");
     const userCollection = client.db("eduFeastDB").collection("users");
+    const reviewCollection = client.db("eduFeastDB").collection("reviews");
 
     // ---------- Meals related API ---------- //
 
@@ -66,7 +67,6 @@ async function run() {
     // to update likes count of meal data in the database
     app.patch("/meal/:id", async (req, res) => {
       const id = req.params.id;
-      console.log({id});
       const query = { _id: new ObjectId(id) };
       const options = {
          $inc: { likes : 1 }
@@ -75,8 +75,10 @@ async function run() {
       res.send(result);
     });
 
+
     // ---------- Users related API ---------- //
 
+    // Get specific user by email for user or admin profile info
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       console.log(email);
@@ -85,6 +87,7 @@ async function run() {
       res.send(result);
     });
 
+    // Add user to database when user is created in the client site
     app.post("/users", async (req, res) => {
       const user = req.body;
       console.log(user);
@@ -99,6 +102,36 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+
+     
+
+        // ---------- User Reviews related API ---------- //
+
+    
+        app.get("/reviews/:id", async(req,res)=>{
+          const id = req.params.id;
+          console.log({id});
+          const query = { mealId: id}
+          const result = await reviewCollection.find(query).toArray();
+          res.send(result);
+      })    
+
+    app.post("/addReview", async(req,res)=>{
+        const review = req.body;
+        const {mealId} = review;
+
+        console.log("reviews information",review);
+        const query = { _id: new ObjectId(mealId)}
+        const options ={
+           $inc: {reviews: 1}
+        }
+        const result = await reviewCollection.insertOne(review);
+        if(result.insertedId){
+          await allMealCollection.updateOne(query, options);
+        }
+        res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
