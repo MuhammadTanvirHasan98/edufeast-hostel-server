@@ -28,6 +28,7 @@ async function run() {
 
     const allMealCollection = client.db("eduFeastDB").collection("allMeals");
     const userCollection = client.db("eduFeastDB").collection("users");
+    const requestedMealCollection = client.db("eduFeastDB").collection("requestedMeals");
     const reviewCollection = client.db("eduFeastDB").collection("reviews");
 
     // ---------- Meals related API ---------- //
@@ -63,6 +64,16 @@ async function run() {
       const result = await allMealCollection.findOne(query);
       res.send(result);
     });
+
+
+    // Save meal request by user in the database
+    
+    app.post("/requestMeal", async(req,res)=>{
+      const mealData = req.body;
+      const result = await requestedMealCollection.insertOne(mealData);
+      res.send(result);
+  })
+
 
     // to update likes count of meal data in the database
     app.patch("/meal/:id", async (req, res) => {
