@@ -66,6 +66,26 @@ async function run() {
     });
 
 
+     // get all requested meals of a single user data from database
+     app.get("/requestedMeals/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await requestedMealCollection.find({'userInfo.email': email}).toArray();
+      res.send(result);
+    });
+
+
+     // Delete specific requested meal of a single user data from database
+     app.delete("/requestedMeals/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = {_id : new ObjectId(id)}
+      const result = await requestedMealCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+
     // Save meal request by user in the database
     
     app.post("/requestMeal", async(req,res)=>{
